@@ -1,6 +1,9 @@
 import 'package:airline_reservation_system/Data/Providers/services/local_storage_service.dart';
 import 'package:flutter/material.dart';
 
+import '../../Ui/Screens/Login/login_with_phone_screen.dart';
+import '../../main.dart';
+
 class AuthProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _isLoggedIn = false;
@@ -53,6 +56,12 @@ class AuthProvider with ChangeNotifier {
     await LocalStorageService.clear();
     _isLoggedIn = false;
     notifyListeners();
+
+    // use the root navigator to wipe every route and show login
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginWithPhoneScreen()),
+          (_) => false,
+    );
   }
 
   void _setLoading(bool value) {

@@ -1,77 +1,57 @@
+import 'package:airline_reservation_system/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'flight_search_screen.dart';  // placeholder next page
+import 'package:airline_reservation_system/Data/Providers/services/local_storage_service.dart';
+import '../login_with_phone_screen.dart';
+import 'flight_search_screen.dart';
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+class InitialSplashScreen extends StatefulWidget {
+  const InitialSplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  State<InitialSplashScreen> createState() => _InitialSplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double>   _fade;
+class _InitialSplashScreenState extends State<InitialSplashScreen> {
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..forward();
-    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
+    _init();
   }
 
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
+  Future<void> _init() async {
+    // Show the splash for at least a short moment
+    await Future.delayed(const Duration(seconds:3));
+
+    final loggedIn = await LocalStorageService.isLoggedIn();
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => loggedIn
+            ? const FlightSearchScreen()
+            : const LoginWithPhoneScreen(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
+    // Your splash UI (logo, animation, etc.)
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: FadeTransition(
-            opacity: _fade,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // plane logo — use your asset or an Icon for now
-                Icon(Icons.flight_takeoff,
-                    size: size.width * 0.35, color: Colors.red),
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: size.width * 0.6,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const FlightSearchScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Book Flight',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
+      backgroundColor: AppColors.orange,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/app_logo.png',
+              width: 300,
             ),
-          ),
-        ),
+            Text("Flight Booking App", style: TextStyle(color: Colors.white,fontSize: 30 ,fontWeight: FontWeight.bold),)
+          ],
+        )
       ),
     );
   }

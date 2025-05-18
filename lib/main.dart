@@ -1,42 +1,43 @@
-import 'package:airline_reservation_system/Ui/Screens/Login/Bookings/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'Data/Providers/auth_provider.dart';
-import 'Data/Providers/login_provider.dart';
-import 'Data/Providers/services/local_storage_service.dart';
-import 'Ui/Screens/Login/Bookings/flight_search_screen.dart';
+
+import 'data/providers/auth_provider.dart';
+import 'data/providers/login_provider.dart';
+import 'ui/screens/login/bookings/splash_screen.dart';
 import 'app_colors.dart';
-import 'ui/screens/login/login_with_phone_screen.dart';
 
-void main() async {
+/// A global root‑navigator so any part of the app (including AuthProvider)
+/// can reset the whole route‑stack, e.g. on logout or token‑expiry.
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final alreadyIn = await LocalStorageService.isLoggedIn();
-
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => LoginProvider()),
       ],
-      child: MyApp(showHome: alreadyIn),
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.showHome});
-  final bool showHome;
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,            // ★ root navigator
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Roboto',
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.orange),
         scaffoldBackgroundColor: AppColors.lightGrey,
       ),
-      home: showHome ? const FlightSearchScreen() : LoginWithPhoneScreen(),
+      // Always start with the splash/initial‑routing widget
+      home: const InitialSplashScreen(),
     );
   }
 }

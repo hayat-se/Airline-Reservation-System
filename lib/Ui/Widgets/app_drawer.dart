@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../Data/Providers/services/local_storage_service.dart';
 import '../../data/providers/auth_provider.dart';
 import '../../app_colors.dart';
@@ -17,7 +18,7 @@ class AppDrawer extends StatelessWidget {
     return FutureBuilder<Map<String, String?>>(
       future: LocalStorageService.getUser(),
       builder: (context, snapshot) {
-        final name = snapshot.data?['name'] ?? 'Guest';
+        final name  = snapshot.data?['name']  ?? 'Guest';
         final email = snapshot.data?['email'] ?? '';
 
         return Drawer(
@@ -28,7 +29,7 @@ class AppDrawer extends StatelessWidget {
                 const Divider(height: 0),
                 Expanded(child: _menuList(context)),
                 const Divider(height: 0),
-                _logoutTile(context),
+                _logoutTile(),      // ← no context param
               ],
             ),
           ),
@@ -38,7 +39,7 @@ class AppDrawer extends StatelessWidget {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Header with avatar replaced by initial to avoid asset error
+  // Header (avatar replaced by initial)
   Widget _header(String name, String email) {
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -57,9 +58,10 @@ class AppDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600)),
+                Text(
+                  name,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
                 const SizedBox(height: 4),
                 Text(email, style: const TextStyle(color: Colors.grey)),
               ],
@@ -145,22 +147,23 @@ class AppDrawer extends StatelessWidget {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Logout tile with proper logout and navigation
-  Widget _logoutTile(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.logout, color: Colors.redAccent),
-      title: const Text('Log Out', style: TextStyle(color: Colors.redAccent)),
-      onTap: () async {
-        final auth = Provider.of<AuthProvider>(context, listen: false);
-        await auth.logout();
-        if (context.mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginWithPhoneScreen()),
-                (_) => false,
-          );
-        }
-      },
+  // Logout tile – wrapped in Builder so provider is always found
+  Widget _logoutTile() {
+    return Builder(
+      builder: (ctx) => ListTile(
+        leading: const Icon(Icons.logout, color: Colors.redAccent),
+        title:  const Text('Log Out', style: TextStyle(color: Colors.redAccent)),
+        onTap: () async {
+          await Provider.of<AuthProvider>(ctx, listen: false).logout();
+          if (ctx.mounted) {
+            Navigator.pushAndRemoveUntil(
+              ctx,
+              MaterialPageRoute(builder: (_) => const LoginWithPhoneScreen()),
+                  (_) => false,
+            );
+          }
+        },
+      ),
     );
   }
 }

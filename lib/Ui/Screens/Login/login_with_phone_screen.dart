@@ -5,6 +5,7 @@ import '../../../data/providers/login_provider.dart';
 import '../../widgets/custom_text_field.dart';
 import 'Bookings/flight_search_screen.dart';
 import 'auth/create_account_screen.dart';
+import 'auth/forgot_password_screen.dart';
 
 class LoginWithPhoneScreen extends StatefulWidget {
   const LoginWithPhoneScreen({super.key});
@@ -14,9 +15,11 @@ class LoginWithPhoneScreen extends StatefulWidget {
 }
 
 class _LoginWithPhoneScreenState extends State<LoginWithPhoneScreen> {
-  final _formKey           = GlobalKey<FormState>();
-  final _emailController   = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -35,11 +38,11 @@ class _LoginWithPhoneScreenState extends State<LoginWithPhoneScreen> {
     );
 
     if (context.mounted) {
-      // 🚀  go straight to home & clear back‑stack
+      // 🚀 go straight to home & clear back‑stack
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const FlightSearchScreen()),
-            (route) => false,
+        (route) => false,
       );
     }
   }
@@ -47,7 +50,7 @@ class _LoginWithPhoneScreenState extends State<LoginWithPhoneScreen> {
   @override
   Widget build(BuildContext context) {
     final loginProvider = context.watch<LoginProvider>();
-    final isLoading     = context.watch<AuthProvider>().isLoading;
+    final isLoading = context.watch<AuthProvider>().isLoading;
 
     return Scaffold(
       body: SafeArea(
@@ -61,9 +64,10 @@ class _LoginWithPhoneScreenState extends State<LoginWithPhoneScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 30),
-                  const Text('Login',
-                      style: TextStyle(
-                          fontSize: 28, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Login',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
                   const Text('Welcome back to the app'),
                   const SizedBox(height: 30),
@@ -73,30 +77,31 @@ class _LoginWithPhoneScreenState extends State<LoginWithPhoneScreen> {
                     label: 'Email',
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    validator: (v) =>
-                    v == null || v.isEmpty ? 'Required' : null,
+                    validator:
+                        (v) => v == null || v.isEmpty ? 'Required' : null,
                   ),
                   const SizedBox(height: 15),
 
-                  // ── Password + "Forgot" ────────────────────────────────
-                  Stack(
-                    alignment: Alignment.centerRight,
-                    children: [
-                      CustomTextField(
-                        label: 'Password',
-                        controller: _passwordController,
-                        obscureText: true,
-                        validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
+                  // ── Password ─────────────────────────────────────────────
+                  CustomTextField(
+                    label: 'Password',
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    validator:
+                        (v) => v == null || v.isEmpty ? 'Required' : null,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey,
                       ),
-                      TextButton(
-                        onPressed: () {
-                          // TODO: Forgot‑password flow
-                        },
-                        child: const Text('Forgot Password?',
-                            style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                   const SizedBox(height: 10),
 
@@ -110,6 +115,26 @@ class _LoginWithPhoneScreenState extends State<LoginWithPhoneScreen> {
                       const Text('Keep me signed in'),
                     ],
                   ),
+
+                  // ── Forgot Password Button BELOW checkbox ───────────────
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ForgotPasswordScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 20),
 
                   // ── Login Button ───────────────────────────────────────
@@ -119,18 +144,23 @@ class _LoginWithPhoneScreenState extends State<LoginWithPhoneScreen> {
                       minimumSize: const Size.fromHeight(50),
                     ),
                     onPressed: isLoading ? null : _handleLogin,
-                    child: isLoading
-                        ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                        : const Text('Login',
-                        style:
-                        TextStyle(color: Colors.white, fontSize: 18)),
+                    child:
+                        isLoading
+                            ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text(
+                              'Login',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                              ),
+                            ),
                   ),
 
                   const SizedBox(height: 30),
@@ -142,22 +172,25 @@ class _LoginWithPhoneScreenState extends State<LoginWithPhoneScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const CreateAccountScreen()),
+                            builder: (_) => const CreateAccountScreen(),
+                          ),
                         );
                       },
-                      child: const Text(
-                        'Create an account',
-                        style: TextStyle(color: Colors.red),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'New to the app? ',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          const Text(
+                            'Create an account',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-
-                  // ── force‑logout for testing (OPTIONAL) ───────────────
-                  // FutureBuilder(
-                  //   future: LocalStorageService.isLoggedIn(),
-                  //   builder: (_, snap) =>
-                  //       Text('Logged in prefs: ${snap.data}'),
-                  // ),
                 ],
               ),
             ),

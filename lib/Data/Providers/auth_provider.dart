@@ -1,10 +1,19 @@
+import 'package:airline_reservation_system/Data/Providers/services/local_storage_service.dart';
 import 'package:flutter/material.dart';
 
 class AuthProvider with ChangeNotifier {
-  bool isLoading = false;
+  bool _isLoading = false;
+  bool _isLoggedIn = false;
 
-  void toggleLoading(bool value) {
-    isLoading = value;
+  bool get isLoading => _isLoading;
+  bool get isLoggedIn => _isLoggedIn;
+
+  AuthProvider() {
+    _init();
+  }
+
+  Future<void> _init() async {
+    _isLoggedIn = await LocalStorageService.isLoggedIn();
     notifyListeners();
   }
 
@@ -13,9 +22,41 @@ class AuthProvider with ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    toggleLoading(true);
-    await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-    toggleLoading(false);
-    // You can add real backend call here
+    _setLoading(true);
+    // Simulate network call
+    await Future.delayed(const Duration(seconds: 1));
+    await LocalStorageService.saveUserCredentials(
+      email,
+      password,
+      name: name,
+    );
+    _isLoggedIn = true;
+    _setLoading(false);
+  }
+
+  Future<void> login({
+    required String email,
+    required String password,
+  }) async {
+    _setLoading(true);
+    await Future.delayed(const Duration(seconds: 1));
+    await LocalStorageService.saveUserCredentials(
+      email,
+      password,
+      name: 'John Doe',
+    );
+    _isLoggedIn = true;
+    _setLoading(false);
+  }
+
+  Future<void> logout() async {
+    await LocalStorageService.clear();
+    _isLoggedIn = false;
+    notifyListeners();
+  }
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
   }
 }

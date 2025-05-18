@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../Data/Providers/services/local_storage_service.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/login_provider.dart';
 import '../../widgets/custom_text_field.dart';
@@ -31,21 +32,28 @@ class _LoginWithPhoneScreenState extends State<LoginWithPhoneScreen> {
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final auth = context.read<AuthProvider>();
-    await auth.login(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
+    final ok = await LocalStorageService.verify(
+      _emailController.text.trim(),
+      _passwordController.text,
     );
 
-    if (context.mounted) {
-      // 🚀 go straight to home & clear back‑stack
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const FlightSearchScreen()),
-        (route) => false,
+    if (!ok) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid email or password')),
       );
+      return;
     }
+
+    // credentials are correct → continue to home
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const FlightSearchScreen()),
+          (_) => false,
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -1,9 +1,9 @@
+import 'package:airline_reservation_system/Ui/Screens/Login/Bookings/search_result_screen.dart';
 import 'package:flutter/material.dart';
-
+import 'package:intl/intl.dart';
 import '../../../../app_colors.dart';
 import '../../../Widgets/app_drawer.dart';
 import '../../../Widgets/form_tile.dart';
-
 
 class FlightSearchScreen extends StatefulWidget {
   const FlightSearchScreen({super.key});
@@ -19,18 +19,23 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   int pax = 1;
   String cabin = 'Economy';
 
+  /* ────────────────────── PICKERS ────────────────────── */
+
   Future<void> _selectAirport(bool isFrom) async {
-    final list = ['DEL • Delhi', 'BOM • Mumbai', 'BLR • Bengaluru'];
+    const list = ['DEL • Delhi', 'BOM • Mumbai', 'BLR • Bengaluru'];
     final picked = await showModalBottomSheet<String>(
       context: context,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (_) => ListView(
         children: list
-            .map((a) => ListTile(
-          title: Text(a),
-          onTap: () => Navigator.pop(context, a),
-        ))
+            .map(
+              (a) => ListTile(
+            title: Text(a),
+            onTap: () => Navigator.pop(context, a),
+          ),
+        )
             .toList(),
       ),
     );
@@ -59,23 +64,30 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (_) => ListView(
         children: classes
-            .map((c) => ListTile(
-          title: Text(c),
-          onTap: () {
-            setState(() => cabin = c);
-            Navigator.pop(context);
-          },
-        ))
+            .map(
+              (c) => ListTile(
+            title: Text(c),
+            onTap: () {
+              setState(() => cabin = c);
+              Navigator.pop(context);
+            },
+          ),
+        )
             .toList(),
       ),
     );
   }
 
+  /* ────────────────────── BUILD ────────────────────── */
+
   @override
   Widget build(BuildContext context) {
+    final df = DateFormat('dd MMM yyyy');
+
     return Scaffold(
       backgroundColor: AppColors.lightGrey,
       drawer: const AppDrawer(selected: 'home'),
@@ -83,15 +95,17 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
-        title: const Text('Book Flight',
-            style: TextStyle(fontWeight: FontWeight.w600)),
+        title: const Text(
+          'Book Flight',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 80),
         child: Column(
           children: [
-            SizedBox(height: 50,),
+            const SizedBox(height: 40),
             FormTile(
               icon: Icons.flight_takeoff,
               label: 'From',
@@ -107,9 +121,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
             FormTile(
               icon: Icons.calendar_today,
               label: 'Departure Date',
-              value: depart == null
-                  ? ''
-                  : '${depart!.day}/${depart!.month}/${depart!.year}',
+              value: depart == null ? '' : df.format(depart!),
               onTap: _pickDate,
             ),
             FormTile(
@@ -118,57 +130,79 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
               value: cabin,
               onTap: _pickCabin,
             ),
-            Card(
-              elevation: 1,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                leading: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: AppColors.lightGrey,
-                  child: const Icon(Icons.person, color: AppColors.orange),
-                ),
-                title: const Text('Passengers',
-                    style: TextStyle(fontSize: 13, color: Colors.grey)),
-                subtitle: Text('$pax',
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w500)),
-                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: pax > 1 ? () => setState(() => pax--) : null,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle_outline),
-                    onPressed: () => setState(() => pax++),
-                  ),
-                ]),
-              ),
-            ),
+            _passengerTile(),
             const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: (from.isNotEmpty &&
-                    to.isNotEmpty &&
-                    depart != null)
-                    ? () {
-                  // TODO: Navigate to results screen
-                }
-                    : null,
-                child: const Text('Search Flights',
-                    style: TextStyle(fontSize: 18)),
-              ),
+            _searchButton(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /* ────────────────────── SMALL WIDGETS ────────────────────── */
+
+  Widget _passengerTile() {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        leading: CircleAvatar(
+          radius: 20,
+          backgroundColor: AppColors.lightGrey,
+          child: const Icon(Icons.person, color: AppColors.orange),
+        ),
+        title: const Text('Passengers',
+            style: TextStyle(fontSize: 13, color: Colors.grey)),
+        subtitle: Text(
+          '$pax',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove_circle_outline),
+              onPressed: pax > 1 ? () => setState(() => pax--) : null,
+            ),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline),
+              onPressed: () => setState(() => pax++),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _searchButton(BuildContext context) {
+    final ready = from.isNotEmpty && to.isNotEmpty && depart != null;
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.orange,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        onPressed: ready
+            ? () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SearchResultScreen(
+                from: from,
+                to: to,
+                departDate: depart!, // safe – checked above
+                passengers: pax,
+                travelClass: '',
+              ),
+            ),
+          );
+        }
+            : null,
+        child: const Text('Search Flights', style: TextStyle(fontSize: 18)),
       ),
     );
   }

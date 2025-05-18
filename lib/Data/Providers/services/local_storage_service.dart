@@ -1,22 +1,54 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorageService {
-  static Future<void> saveUserCredentials(String email, String password) async {
+  static const _kEmailKey    = 'email';
+  static const _kPasswordKey = 'password';
+  static const _kNameKey     = 'name';
+
+  /* ---------------- PUBLIC API --------------- */
+
+  /// Save or overwrite credentials & name.
+  static Future<void> saveUserCredentials(
+      String email,
+      String password, {
+        String? name,
+      }) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('email', email);
-    await prefs.setString('password', password);
+    await prefs.setString(_kEmailKey, email.trim());
+    await prefs.setString(_kPasswordKey, password.trim());
+    if (name != null) await prefs.setString(_kNameKey, name.trim());
   }
 
-  static Future<Map<String, String?>> getUserCredentials() async {
+  /// Return a map with whatever fields were found.
+  static Future<Map<String, String?>> getUser() async {
     final prefs = await SharedPreferences.getInstance();
-    final email = prefs.getString('email');
-    final password = prefs.getString('password');
-    return {'email': email, 'password': password};
+    return {
+      'email'   : prefs.getString(_kEmailKey),
+      'password': prefs.getString(_kPasswordKey),
+      'name'    : prefs.getString(_kNameKey),
+    };
   }
 
-  static Future<void> clearUserCredentials() async {
+  /// Check typed email & password against stored values.
+  static Future<bool> verify(String email, String password) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('email');
-    await prefs.remove('password');
+    return prefs.getString(_kEmailKey) == email.trim() &&
+        prefs.getString(_kPasswordKey) == password.trim();
+  }
+
+  /// Remove everything (call on logout).
+  static Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kEmailKey);
+    await prefs.remove(_kPasswordKey);
+    await prefs.remove(_kNameKey);
+  }
+
+  /// Check if user is logged in by checking if email & password are stored
+  static Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString(_kEmailKey);
+    final password = prefs.getString(_kPasswordKey);
+    return email != null && email.isNotEmpty && password != null && password.isNotEmpty;
   }
 }

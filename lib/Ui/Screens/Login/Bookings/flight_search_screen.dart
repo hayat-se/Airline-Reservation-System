@@ -1,9 +1,9 @@
-import 'package:airline_reservation_system/Ui/Screens/Login/Bookings/search_result_screen.dart';
+// lib/Ui/Screens/Login/Bookings/flight_search_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../app_colors.dart';
-import '../../../Widgets/app_drawer.dart';
-import '../../../Widgets/form_tile.dart';
+import '../../../../Data/Providers/Models/ticket.dart';
+import '../../../Widgets/location_picker_field.dart';
+import 'search_result_screen.dart';
 
 class FlightSearchScreen extends StatefulWidget {
   const FlightSearchScreen({super.key});
@@ -13,197 +13,287 @@ class FlightSearchScreen extends StatefulWidget {
 }
 
 class _FlightSearchScreenState extends State<FlightSearchScreen> {
-  String from = '';
-  String to = '';
-  DateTime? depart;
-  int pax = 1;
-  String cabin = 'Economy';
+  final _fromCtrl = TextEditingController();
+  final _toCtrl   = TextEditingController();
+  DateTime _departDate = DateTime.now().add(const Duration(days: 1));
+  DateTime? _returnDate;
+  int _passengers = 1;
+  String _travelClass = 'Economy';
 
-  /* ────────────────────── PICKERS ────────────────────── */
+  final _df = DateFormat('dd MMM yyyy');
 
-  Future<void> _selectAirport(bool isFrom) async {
-    const list = ['DEL • Delhi', 'BOM • Mumbai', 'BLR • Bengaluru'];
-    final picked = await showModalBottomSheet<String>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => ListView(
-        children: list
-            .map(
-              (a) => ListTile(
-            title: Text(a),
-            onTap: () => Navigator.pop(context, a),
-          ),
-        )
-            .toList(),
-      ),
-    );
-    if (picked != null) setState(() => isFrom ? from = picked : to = picked);
+  @override
+  void dispose() {
+    _fromCtrl.dispose();
+    _toCtrl.dispose();
+    super.dispose();
   }
 
-  Future<void> _pickDate() async {
-    final now = DateTime.now();
+  /// sample tickets – replace with your API call
+  final _sampleTickets = const [
+    Ticket(
+        airline: 'Indigo',
+        flightNumber: '6E‑221',
+        fromCode: 'DXB',
+        toCode: 'LHR',
+        departTime: '05:30',
+        arriveTime: '10:20',
+        duration: '7h 50m',
+        price: 230),
+    Ticket(
+        airline: 'Qatar',
+        flightNumber: 'QR‑102',
+        fromCode: 'DXB',
+        toCode: 'LHR',
+        departTime: '11:15',
+        arriveTime: '16:05',
+        duration: '7h 50m',
+        price: 255),
+  ];
+
+  // ───────────────────────────────────────────── helpers
+  Future<void> _pickDepartDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: depart ?? now,
-      firstDate: now,
-      lastDate: DateTime(now.year + 2),
-      builder: (c, child) => Theme(
-        data: Theme.of(c).copyWith(
-          colorScheme: const ColorScheme.light(primary: AppColors.orange),
-        ),
-        child: child!,
-      ),
+      initialDate: _departDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null) setState(() => depart = picked);
+    if (picked != null) setState(() => _departDate = picked);
   }
 
-  void _pickCabin() {
-    const classes = ['Economy', 'Premium Economy', 'Business', 'First'];
-    showModalBottomSheet(
+  Future<void> _pickReturnDate() async {
+    final picked = await showDatePicker(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => ListView(
-        children: classes
-            .map(
-              (c) => ListTile(
-            title: Text(c),
-            onTap: () {
-              setState(() => cabin = c);
-              Navigator.pop(context);
-            },
-          ),
-        )
-            .toList(),
+      initialDate: _returnDate ?? _departDate.add(const Duration(days: 3)),
+      firstDate: _departDate,
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (picked != null) setState(() => _returnDate = picked);
+  }
+
+  void _search() {
+    if (_fromCtrl.text.isEmpty || _toCtrl.text.isEmpty) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SearchResultScreen(
+          from: _fromCtrl.text,
+          to: _toCtrl.text,
+          departDate: _departDate,
+          returnDate: _returnDate,
+          passengers: _passengers,
+          travelClass: _travelClass,
+          tickets: _sampleTickets,
+        ),
       ),
     );
   }
-
-  /* ────────────────────── BUILD ────────────────────── */
 
   @override
   Widget build(BuildContext context) {
-    final df = DateFormat('dd MMM yyyy');
-
     return Scaffold(
-      backgroundColor: AppColors.lightGrey,
-      drawer: const AppDrawer(selected: 'home'),
       appBar: AppBar(
+        title: const Text('Book Flight'),
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        title: const Text(
-          'Book Flight',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 80),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 40),
-            FormTile(
-              icon: Icons.flight_takeoff,
+            // ── FROM ────────────────────────────────────────
+            LocationPickerField(
               label: 'From',
-              value: from,
-              onTap: () => _selectAirport(true),
+              controller: _fromCtrl,
+              onSelected: (_, __) => setState(() {}),
             ),
-            FormTile(
-              icon: Icons.flight_land,
+            const SizedBox(height: 16),
+
+            // ── TO ──────────────────────────────────────────
+            LocationPickerField(
               label: 'To',
-              value: to,
-              onTap: () => _selectAirport(false),
+              controller: _toCtrl,
+              onSelected: (_, __) => setState(() {}),
             ),
-            FormTile(
-              icon: Icons.calendar_today,
-              label: 'Departure Date',
-              value: depart == null ? '' : df.format(depart!),
-              onTap: _pickDate,
-            ),
-            FormTile(
-              icon: Icons.event_seat,
-              label: 'Class',
-              value: cabin,
-              onTap: _pickCabin,
-            ),
-            _passengerTile(),
-            const SizedBox(height: 30),
-            _searchButton(context),
-          ],
-        ),
-      ),
-    );
-  }
+            const SizedBox(height: 16),
 
-  /* ────────────────────── SMALL WIDGETS ────────────────────── */
-
-  Widget _passengerTile() {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          radius: 20,
-          backgroundColor: AppColors.lightGrey,
-          child: const Icon(Icons.person, color: AppColors.orange),
-        ),
-        title: const Text('Passengers',
-            style: TextStyle(fontSize: 13, color: Colors.grey)),
-        subtitle: Text(
-          '$pax',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline),
-              onPressed: pax > 1 ? () => setState(() => pax--) : null,
+            // ── DATES ───────────────────────────────────────
+            Row(
+              children: [
+                Expanded(
+                  child: _DateBox(
+                    label: 'Departure',
+                    date: _departDate,
+                    onTap: _pickDepartDate,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _DateBox(
+                    label: 'Return',
+                    date: _returnDate,
+                    onTap: _pickReturnDate,
+                    placeholder: 'One‑way',
+                  ),
+                ),
+              ],
             ),
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              onPressed: () => setState(() => pax++),
+            const SizedBox(height: 16),
+
+            // ── PASSENGERS & CLASS ──────────────────────────
+            Row(
+              children: [
+                Expanded(
+                  child: _DropdownBox<int>(
+                    label: 'Passengers',
+                    value: _passengers,
+                    items: List.generate(9, (i) => i + 1),
+                    stringify: (v) => v.toString(),
+                    onChanged: (v) => setState(() => _passengers = v!),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _DropdownBox<String>(
+                    label: 'Class',
+                    value: _travelClass,
+                    items: const ['Economy', 'Business', 'First'],
+                    stringify: (v) => v,
+                    onChanged: (v) => setState(() => _travelClass = v!),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _searchButton(BuildContext context) {
-    final ready = from.isNotEmpty && to.isNotEmpty && depart != null;
-
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.orange,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        onPressed: ready
-            ? () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => SearchResultScreen(
-                from: from,
-                to: to,
-                departDate: depart!, // safe – checked above
-                passengers: pax,
-                travelClass: '',
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: _search,
+                child: const Text('Search',
+                    style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
             ),
-          );
-        }
-            : null,
-        child: const Text('Search Flights', style: TextStyle(fontSize: 18)),
+          ],
+        ),
       ),
     );
   }
+}
+
+// ───────────────────────────────────────── helpers widgets
+class _DateBox extends StatelessWidget {
+  const _DateBox({
+    required this.label,
+    required this.onTap,
+    required this.date,
+    this.placeholder,
+  });
+
+  final String label;
+  final DateTime? date;
+  final VoidCallback onTap;
+  final String? placeholder;
+
+  @override
+  Widget build(BuildContext context) {
+    final df = DateFormat('dd MMM');
+    return GestureDetector(
+      onTap: onTap,
+      child: _boxed(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              date != null ? df.format(date!) : (placeholder ?? ''),
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+        label,
+      ),
+    );
+  }
+
+  Widget _boxed(Widget child, String label) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label,
+          style: const TextStyle(fontSize: 13, color: Colors.grey)),
+      const SizedBox(height: 6),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.grey.shade100,
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: child,
+      ),
+    ],
+  );
+}
+
+class _DropdownBox<T> extends StatelessWidget {
+  const _DropdownBox({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.stringify,
+    required this.onChanged,
+  });
+
+  final String label;
+  final T value;
+  final List<T> items;
+  final String Function(T) stringify;
+  final ValueChanged<T?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _boxed(
+      DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          isExpanded: true,
+          onChanged: onChanged,
+          items: items
+              .map(
+                (e) => DropdownMenuItem(
+              value: e,
+              child: Text(stringify(e)),
+            ),
+          )
+              .toList(),
+        ),
+      ),
+      label,
+    );
+  }
+
+  Widget _boxed(Widget child, String label) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label,
+          style: const TextStyle(fontSize: 13, color: Colors.grey)),
+      const SizedBox(height: 6),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.grey.shade100,
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: child,
+      ),
+    ],
+  );
 }

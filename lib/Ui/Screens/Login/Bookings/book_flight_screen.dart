@@ -98,7 +98,8 @@ class _BookFlightScreenState extends State<BookFlightScreen> {
           departDate: _departDate!,
           returnDate: _returnDate,            // ✅ matches new constructor
           passengers: _passengers,
-          travelClass: _travelClass,          // ✅ matches new constructor
+          travelClass: _travelClass,
+          tickets: [],          // ✅ matches new constructor
         ),
       ),
     );

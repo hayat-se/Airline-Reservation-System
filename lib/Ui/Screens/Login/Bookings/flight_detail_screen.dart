@@ -1,3 +1,4 @@
+import 'package:airline_reservation_system/Ui/Screens/Login/Bookings/seat_selection_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../Data/Providers/Models/ticket.dart';
@@ -27,9 +28,13 @@ class FlightDetailScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.flight, size: 42, color: Colors.orange),
                   const SizedBox(height: 6),
-                  Text(ticket.airline,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    ticket.airline,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -43,15 +48,22 @@ class FlightDetailScreen extends StatelessWidget {
             const Divider(height: 40),
 
             // Price
-            Text('Price',
-                style: TextStyle(
-                    color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+            Text(
+              'Price',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text('\$${ticket.price.toStringAsFixed(0)}',
-                style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange)),
+            Text(
+              '\$${ticket.price.toStringAsFixed(0)}',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.orange,
+              ),
+            ),
             const Spacer(),
 
             // Buttons
@@ -69,14 +81,19 @@ class FlightDetailScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
                     ),
-                    onPressed: () {
-                      // TODO: continue to seat‑selection / payment
+                    onPressed: () async {
+                      final selectedSeat = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SeatSelectionScreen(),
+                        ),
+                      );
                     },
                     child: const Text('Confirm'),
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -89,20 +106,28 @@ class FlightDetailScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(
-                  color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           Row(
             children: [
-              Text(time,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                time,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
               if (code.isNotEmpty) ...[
                 const SizedBox(width: 4),
                 Text(code, style: const TextStyle(color: Colors.grey)),
-              ]
+              ],
             ],
-          )
+          ),
         ],
       ),
     );

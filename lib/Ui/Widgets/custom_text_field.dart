@@ -6,7 +6,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType keyboardType;
   final bool obscureText;
   final String? Function(String?)? validator;
-  final Widget? suffixIcon;          // ← optional
+  final Widget? suffixIcon;
 
   const CustomTextField({
     super.key,
@@ -15,7 +15,9 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.validator,
-    this.suffixIcon,                 // ← NOT required
+    this.suffixIcon,
+    Future<Null> Function()? onTap,
+    bool? readOnly,                 // ← NOT required
   });
 
   @override

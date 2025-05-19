@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../Data/Providers/services/local_storage_service.dart';
+import '../../data/providers/services/local_storage_service.dart';
 import '../../data/providers/auth_provider.dart';
 import '../../app_colors.dart';
 import '../screens/login/login_with_phone_screen.dart';
 
-/// Side drawer used across the app.
+/// Sliding navigation drawer shown across the app.
+///
+/// Pass [selected] with the matching menu id to highlight the active screen.
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key, this.selected});
 
-  /// Pass a string key to highlight the active menu row (e.g. 'home').
+  /// Menu id for the currently‑active screen (e.g. 'flight').
   final String? selected;
 
   @override
@@ -18,18 +20,29 @@ class AppDrawer extends StatelessWidget {
     return FutureBuilder<Map<String, String?>>(
       future: LocalStorageService.getUser(),
       builder: (context, snapshot) {
-        final name  = snapshot.data?['name']  ?? 'Guest';
+        final name = snapshot.data?['name'] ?? 'Guest';
         final email = snapshot.data?['email'] ?? '';
 
         return Drawer(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topRight: Radius.circular(24),
+              bottomRight: Radius.circular(24),
+            ),
+          ),
           child: SafeArea(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _header(name, email),
-                const Divider(height: 0),
-                Expanded(child: _menuList(context)),
-                const Divider(height: 0),
-                _logoutTile(),      // ← no context param
+                _Header(name: name, email: email),
+                const _Divider(),
+                Expanded(child: _MenuList(selected: selected)),
+                const _Divider(),
+                const _AppVersion(),
+                const SizedBox(height: 8),
+                const _LogoutTile(),
               ],
             ),
           ),
@@ -37,44 +50,58 @@ class AppDrawer extends StatelessWidget {
       },
     );
   }
+}
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // Header (avatar replaced by initial)
-  Widget _header(String name, String email) {
+//───────────────────────────────────────────────────────────────────────────
+// Header – avatar, greeting and user name
+class _Header extends StatelessWidget {
+  const _Header({required this.name, required this.email});
+
+  final String name;
+  final String email;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
       child: Row(
         children: [
+          const Icon(Icons.close, size: 22),
+          const SizedBox(width: 24),
           CircleAvatar(
-            radius: 28,
-            backgroundColor: AppColors.orange,
-            child: Text(
-              (name.isNotEmpty ? name[0] : 'G').toUpperCase(),
-              style: const TextStyle(fontSize: 24, color: Colors.white),
-            ),
+            radius: 22,
+            backgroundImage: const AssetImage('assets/images/avatar_placeholder.png'),
+            backgroundColor: Colors.grey.shade200,
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Hello', style: TextStyle(fontSize: 12)),
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 4),
-                Text(email, style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+}
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // Menu list
-  Widget _menuList(BuildContext context) {
+//───────────────────────────────────────────────────────────────────────────
+// Menu list – primary and secondary sections
+class _MenuList extends StatelessWidget {
+  const _MenuList({required this.selected});
+
+  final String? selected;
+
+  @override
+  Widget build(BuildContext context) {
     Widget item({
       required String id,
       required IconData icon,
@@ -84,7 +111,8 @@ class AppDrawer extends StatelessWidget {
       final bool active = selected == id;
       return ListTile(
         leading: Icon(icon,
-            color: active ? AppColors.orange : Colors.grey.shade700),
+            size: 20,
+            color: active ? AppColors.orange : Colors.grey.shade800),
         title: Text(
           label,
           style: TextStyle(
@@ -93,7 +121,7 @@ class AppDrawer extends StatelessWidget {
           ),
         ),
         onTap: () {
-          Navigator.pop(context); // close drawer first
+          Navigator.pop(context);
           onTap?.call();
         },
       );
@@ -102,68 +130,66 @@ class AppDrawer extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        item(
-          id: 'home',
-          icon: Icons.flight_takeoff_rounded,
-          label: 'Book Flight',
-          onTap: () {
-            // TODO: Navigator.pushNamed(context, '/home');
-          },
-        ),
-        item(
-          id: 'myBookings',
-          icon: Icons.assignment_outlined,
-          label: 'My Bookings',
-          onTap: () {
-            // TODO: Navigator.pushNamed(context, '/bookings');
-          },
-        ),
-        item(
-          id: 'offers',
-          icon: Icons.local_offer_outlined,
-          label: 'Offers',
-          onTap: () {},
-        ),
-        item(
-          id: 'notifications',
-          icon: Icons.notifications_none_rounded,
-          label: 'Notifications',
-          onTap: () {},
-        ),
-        item(
-          id: 'help',
-          icon: Icons.help_outline,
-          label: 'Help Center',
-          onTap: () {},
-        ),
-        item(
-          id: 'settings',
-          icon: Icons.settings_outlined,
-          label: 'Settings',
-          onTap: () {},
-        ),
+        item(id: 'myBookings', icon: Icons.assignment_outlined, label: 'My Bookings'),
+        item(id: 'boardingPass', icon: Icons.confirmation_number_outlined, label: 'Boarding Pass'),
+        item(id: 'support', icon: Icons.headset_mic_outlined, label: 'Support'),
+        item(id: 'rate', icon: Icons.star_border, label: 'Rate us'),
+        const _Divider(),
+        item(id: 'flight', icon: Icons.flight_takeoff_rounded, label: 'Flight'),
+        item(id: 'hotel', icon: Icons.hotel_outlined, label: 'Hotel'),
+        item(id: 'bus', icon: Icons.directions_bus_outlined, label: 'Bus'),
+        item(id: 'tour', icon: Icons.lock_outline, label: 'Tour'),
+        item(id: 'loan', icon: Icons.account_balance_wallet_outlined, label: 'Travel loan'),
       ],
     );
   }
+}
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // Logout tile – wrapped in Builder so provider is always found
-  Widget _logoutTile() {
-    return Builder(
-      builder: (ctx) => ListTile(
-        leading: const Icon(Icons.logout, color: Colors.redAccent),
-        title:  const Text('Log Out', style: TextStyle(color: Colors.redAccent)),
-        onTap: () async {
-          await Provider.of<AuthProvider>(ctx, listen: false).logout();
-          if (ctx.mounted) {
-            Navigator.pushAndRemoveUntil(
-              ctx,
-              MaterialPageRoute(builder: (_) => const LoginWithPhoneScreen()),
-                  (_) => false,
-            );
-          }
-        },
+//───────────────────────────────────────────────────────────────────────────
+class _LogoutTile extends StatelessWidget {
+  const _LogoutTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.logout, color: Colors.redAccent),
+      title: const Text('Log Out', style: TextStyle(color: Colors.redAccent)),
+      onTap: () async {
+        await Provider.of<AuthProvider>(context, listen: false).logout();
+        if (context.mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginWithPhoneScreen()),
+                (_) => false,
+          );
+        }
+      },
+    );
+  }
+}
+
+//───────────────────────────────────────────────────────────────────────────
+class _AppVersion extends StatelessWidget {
+  const _AppVersion();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Text(
+        'App version 1.0.1',
+        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
       ),
     );
+  }
+}
+
+//───────────────────────────────────────────────────────────────────────────
+class _Divider extends StatelessWidget {
+  const _Divider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(height: 0, color: Colors.grey.shade300, thickness: 1);
   }
 }

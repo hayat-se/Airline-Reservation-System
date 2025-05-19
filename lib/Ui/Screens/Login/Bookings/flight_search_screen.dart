@@ -1,9 +1,13 @@
 // lib/Ui/Screens/Login/Bookings/flight_search_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../../../Data/Providers/Models/ticket.dart';
 import '../../../Widgets/location_picker_field.dart';
 import 'search_result_screen.dart';
+
+// NEW: shared navigation drawer
+import '../../../Widgets/app_drawer.dart';   // adjust the path if your folder differs
 
 class FlightSearchScreen extends StatefulWidget {
   const FlightSearchScreen({super.key});
@@ -14,7 +18,7 @@ class FlightSearchScreen extends StatefulWidget {
 
 class _FlightSearchScreenState extends State<FlightSearchScreen> {
   final _fromCtrl = TextEditingController();
-  final _toCtrl   = TextEditingController();
+  final _toCtrl = TextEditingController();
   DateTime _departDate = DateTime.now().add(const Duration(days: 1));
   DateTime? _returnDate;
   int _passengers = 1;
@@ -51,7 +55,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
         price: 255),
   ];
 
-  // ───────────────────────────────────────────── helpers
+  // ───────────────────────── date pickers
   Future<void> _pickDepartDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -97,29 +101,29 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
       appBar: AppBar(
         title: const Text('Book Flight'),
         elevation: 0,
+        // the default menu icon will appear on the right because we use endDrawer
       ),
+
+      // NEW: use shared drawer; highlight “flight”
+      endDrawer: const AppDrawer(selected: 'flight'),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── FROM ────────────────────────────────────────
             LocationPickerField(
               label: 'From',
               controller: _fromCtrl,
               onSelected: (_, __) => setState(() {}),
             ),
             const SizedBox(height: 16),
-
-            // ── TO ──────────────────────────────────────────
             LocationPickerField(
               label: 'To',
               controller: _toCtrl,
               onSelected: (_, __) => setState(() {}),
             ),
             const SizedBox(height: 16),
-
-            // ── DATES ───────────────────────────────────────
             Row(
               children: [
                 Expanded(
@@ -141,8 +145,6 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
               ],
             ),
             const SizedBox(height: 16),
-
-            // ── PASSENGERS & CLASS ──────────────────────────
             Row(
               children: [
                 Expanded(
@@ -166,7 +168,6 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -189,7 +190,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   }
 }
 
-// ───────────────────────────────────────── helpers widgets
+// ─────────────────────────────────── helper widgets — unchanged
 class _DateBox extends StatelessWidget {
   const _DateBox({
     required this.label,

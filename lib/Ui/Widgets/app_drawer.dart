@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../data/providers/services/local_storage_service.dart';
 import '../../data/providers/auth_provider.dart';
 import '../../app_colors.dart';
+import '../Screens/Login/Profile/profile_screen.dart';
 import '../screens/login/login_with_phone_screen.dart';
 
 /// Sliding navigation drawer shown across the app.
@@ -68,25 +69,39 @@ class _Header extends StatelessWidget {
         children: [
           const Icon(Icons.close, size: 22),
           const SizedBox(width: 24),
-          CircleAvatar(
-            radius: 22,
-            backgroundImage: const AssetImage('assets/images/avatar_placeholder.png'),
-            backgroundColor: Colors.grey.shade200,
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Hello', style: TextStyle(fontSize: 12)),
-              Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+          InkWell(
+            onTap: ()
+            {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            },
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundImage: const AssetImage('assets/images/avatar_placeholder.png'),
+                  backgroundColor: Colors.grey.shade200,
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Hello', style: TextStyle(fontSize: 12)),
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          )
+
         ],
       ),
     );

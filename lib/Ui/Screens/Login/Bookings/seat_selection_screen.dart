@@ -1,4 +1,7 @@
+import 'package:airline_reservation_system/Ui/Screens/Login/Bookings/ticket_screen.dart';
 import 'package:flutter/material.dart';
+
+import '../payment/payment_screen.dart';
 
 class SeatSelectionScreen extends StatefulWidget {
   const SeatSelectionScreen({super.key});
@@ -92,7 +95,12 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               onPressed: selectedSeat == null
                   ? null
                   : () {
-                Navigator.pop(context, selectedSeat);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PaymentScreen(resSeat: selectedSeat!,),
+                  ),
+                );
               },
               child: const Text('Confirm'),
             ),

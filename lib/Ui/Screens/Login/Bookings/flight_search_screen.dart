@@ -34,26 +34,34 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   }
 
   /// sample tickets – replace with your API call
-  final _sampleTickets = const [
-    Ticket(
-        airline: 'Indigo',
-        flightNumber: '6E‑221',
-        fromCode: 'DXB',
-        toCode: 'LHR',
-        departTime: '05:30',
-        arriveTime: '10:20',
-        duration: '7h 50m',
-        price: 230),
-    Ticket(
-        airline: 'Qatar',
-        flightNumber: 'QR‑102',
-        fromCode: 'DXB',
-        toCode: 'LHR',
-        departTime: '11:15',
-        arriveTime: '16:05',
-        duration: '7h 50m',
-        price: 255),
-  ];
+  List<Ticket> _generateTickets(String from, String to) {
+    final airlines = ['Indigo', 'Qatar', 'Emirates', 'Etihad', 'Air India'];
+    final baseTimes = [
+      {'depart': '05:00', 'arrive': '09:30'},
+      {'depart': '08:45', 'arrive': '13:15'},
+      {'depart': '12:30', 'arrive': '17:05'},
+      {'depart': '15:15', 'arrive': '19:45'},
+      {'depart': '19:00', 'arrive': '23:30'},
+    ];
+
+    return List.generate(5, (i) {
+      final airline = airlines[i];
+      final time = baseTimes[i];
+
+      return Ticket(
+        airline: airline,
+        flightNumber: '${airline.substring(0, 2).toUpperCase()}-${100 + i}',
+        fromCode: from.toUpperCase().substring(0, 3),
+        toCode: to.toUpperCase().substring(0, 3),
+        departTime: time['depart']!,
+        arriveTime: time['arrive']!,
+        duration: '4h 30m', // You can calculate based on time if needed
+        price: 180 + (i * 25),
+      );
+    });
+  }
+
+
 
   // ───────────────────────── date pickers
   Future<void> _pickDepartDate() async {
@@ -79,6 +87,8 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   void _search() {
     if (_fromCtrl.text.isEmpty || _toCtrl.text.isEmpty) return;
 
+    final dynamicTickets = _generateTickets(_fromCtrl.text, _toCtrl.text);
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -89,11 +99,13 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
           returnDate: _returnDate,
           passengers: _passengers,
           travelClass: _travelClass,
-          tickets: _sampleTickets,
+          tickets: dynamicTickets,
         ),
       ),
     );
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +151,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                     label: 'Return',
                     date: _returnDate,
                     onTap: _pickReturnDate,
-                    placeholder: 'One‑way',
+                    placeholder: 'Add Return Date',
                   ),
                 ),
               ],
@@ -151,7 +163,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                   child: _DropdownBox<int>(
                     label: 'Passengers',
                     value: _passengers,
-                    items: List.generate(9, (i) => i + 1),
+                    items: List.generate(3, (i) => i + 1),
                     stringify: (v) => v.toString(),
                     onChanged: (v) => setState(() => _passengers = v!),
                   ),

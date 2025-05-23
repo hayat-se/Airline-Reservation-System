@@ -3,11 +3,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../Data/Providers/Models/ticket.dart';
 import '../Bookings/ticket_screen.dart';
 import 'package:flutter/services.dart';
+import 'dart:convert';
 
 class PaymentScreen extends StatefulWidget {
   final String resSeat;
+  final Ticket ticket;  // Added ticket param
 
-  const PaymentScreen({super.key, required this.resSeat});
+  const PaymentScreen({super.key, required this.resSeat, required this.ticket});
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -54,135 +56,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     super.dispose();
   }
 
-  void _confirmPayment() {
-    if (_formKey.currentState!.validate()) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => TicketScreen(seat: widget.resSeat),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: const Text('Payment'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 1,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              const Icon(Icons.credit_card_rounded,
-                  size: 80, color: Colors.orange),
-
-              const SizedBox(height: 20),
-
-              // Payment Card Container
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    _buildField('Cardholder Name', _cardNameController),
-                    _buildField(
-                      'Card Number',
-                      _cardNumberController,
-                      hint: '1234 5678 9012 3456',
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      maxLength: 16,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildField(
-                            'Expiry Date',
-                            _expiryDateController,
-                            hint: 'MM/YY',
-                            keyboardType: TextInputType.datetime,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9/]')),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildField(
-                            'CVV',
-                            _cvvController,
-                            hint: '123',
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(4),
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-
-                    CheckboxListTile(
-                      value: _saveCard,
-                      onChanged: (val) => setState(() => _saveCard = val!),
-                      contentPadding: EdgeInsets.zero,
-                      activeColor: Colors.orange,
-                      title: const Text("Save this card for future"),
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                  icon: const Icon(Icons.lock_outline),
-                  onPressed: _confirmPayment,
-                  label: const Text(
-                    'Confirm Payment',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildField(
       String label,
       TextEditingController controller, {
@@ -224,6 +97,131 @@ class _PaymentScreenState extends State<PaymentScreen> {
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(color: Colors.orange),
             borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        title: const Text('Payment'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 1,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              const Icon(Icons.credit_card_rounded,
+                  size: 80, color: Colors.orange),
+              const SizedBox(height: 20),
+
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildField('Cardholder Name', _cardNameController),
+                    _buildField(
+                      'Card Number',
+                      _cardNumberController,
+                      hint: '1234 5678 9012 3456',
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      maxLength: 16,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildField(
+                            'Expiry Date',
+                            _expiryDateController,
+                            hint: 'MM/YY',
+                            keyboardType: TextInputType.datetime,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildField(
+                            'CVV',
+                            _cvvController,
+                            hint: '123',
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(4),
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    CheckboxListTile(
+                      value: _saveCard,
+                      onChanged: (val) => setState(() => _saveCard = val!),
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: Colors.orange,
+                      title: const Text("Save this card for future"),
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(Icons.lock_outline),
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      await saveBookingLocally(widget.ticket, widget.resSeat);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                TicketScreen(seat: widget.resSeat)),
+                      );
+                    }
+                  },
+                  label: const Text(
+                    'Confirm Payment',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+            ],
           ),
         ),
       ),

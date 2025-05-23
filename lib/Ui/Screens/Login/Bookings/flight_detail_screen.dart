@@ -81,7 +81,7 @@ class FlightDetailScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            SizedBox(width: 150,),
+                            SizedBox(width: 150),
                             const Icon(Icons.attach_money,
                                 size: 50, color: Colors.black),
                             Text(
@@ -127,14 +127,13 @@ class FlightDetailScreen extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14)),
                     ),
-                    onPressed: () async {
-                      final selectedSeat = await Navigator.push(
+                    onPressed: () {
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const SeatSelectionScreen(),
+                          builder: (_) => SeatSelectionScreen(ticket: ticket),
                         ),
                       );
-                      // You can handle the selected seat here if needed
                     },
                     child: const Text('Confirm',
                         style: TextStyle(color: Colors.white)),

@@ -2,9 +2,12 @@ import 'package:airline_reservation_system/Ui/Screens/Login/Bookings/ticket_scre
 import 'package:flutter/material.dart';
 
 import '../payment/payment_screen.dart';
+import '../../../../Data/Providers/Models/ticket.dart';
 
 class SeatSelectionScreen extends StatefulWidget {
-  const SeatSelectionScreen({super.key});
+  final Ticket ticket;
+
+  const SeatSelectionScreen({super.key, required this.ticket});
 
   @override
   State<SeatSelectionScreen> createState() => _SeatSelectionScreenState();
@@ -98,7 +101,10 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => PaymentScreen(resSeat: selectedSeat!,),
+                    builder: (context) => PaymentScreen(
+                      resSeat: selectedSeat!,
+                      ticket: widget.ticket,
+                    ),
                   ),
                 );
               },

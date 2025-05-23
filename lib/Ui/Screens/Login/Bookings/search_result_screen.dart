@@ -41,7 +41,6 @@ class SearchResultScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // ── summary tile on top ─────────────────────────────
           _SearchHeader(
             df: df,
             from: from,
@@ -73,7 +72,6 @@ class SearchResultScreen extends StatelessWidget {
   }
 }
 
-// ───────────────────────────────────────────────────────────── Search Header
 class _SearchHeader extends StatelessWidget {
   const _SearchHeader({
     required this.df,
@@ -141,7 +139,6 @@ class _SearchHeader extends StatelessWidget {
   }
 }
 
-// ───────────────────────────────────────────────────────────── Ticket Card
 class _TicketCard extends StatelessWidget {
   const _TicketCard({
     required this.ticket,
@@ -150,6 +147,24 @@ class _TicketCard extends StatelessWidget {
 
   final Ticket ticket;
   final VoidCallback onTap;
+
+  String _getLogoPath(String airline) {
+    switch (airline.toLowerCase()) {
+      case 'pia':
+      case 'pakistan international airlines':
+        return 'assets/images/Airblue-logo.png';
+      case 'airblue':
+        return 'assets/logos/airblue.png';
+      case 'sereneair':
+        return 'assets/logos/sereneair.png';
+      case 'airsial':
+        return 'assets/logos/airsial.png';
+      case 'fly jinnah':
+        return 'assets/logos/flyjinnah.png';
+      default:
+        return 'assets/logos/default.png';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -164,20 +179,28 @@ class _TicketCard extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           child: Column(
             children: [
-              // airline row
               Row(
                 children: [
-                  const Icon(Icons.flight, color: Colors.orange, size: 18),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${ticket.airline}  •  ${ticket.flightNumber}',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 14),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      _getLogoPath(ticket.airline),
+                      height: 24,
+                      width: 60,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      '${ticket.airline} • ${ticket.flightNumber}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 14),
-              // times row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -195,12 +218,11 @@ class _TicketCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 18),
-              // price + CTA
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '\$${ticket.price.toStringAsFixed(0)}',
+                    'PKR ${ticket.price.toStringAsFixed(0)}',
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,

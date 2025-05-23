@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,10 +25,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
     if (bookingsJson != null) {
       final List<dynamic> decoded = jsonDecode(bookingsJson);
-      // cast to List<Map<String, dynamic>>
       _bookings = decoded.map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e)).toList();
-    } else {
-      _bookings = [];
     }
 
     setState(() {
@@ -37,82 +33,145 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     });
   }
 
-  Future<void> _deleteBooking(int index) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Booking'),
-        content: const Text('Are you sure you want to delete this booking?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      setState(() {
-        _bookings.removeAt(index);
-      });
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('my_bookings', jsonEncode(_bookings));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F7F7),
       appBar: AppBar(
         title: const Text('My Bookings'),
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _bookings.isEmpty
-          ? const Center(
-        child: Text(
-          'No bookings found.',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
-      )
+          ? const Center(child: Text('No bookings found'))
           : ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _bookings.length,
         itemBuilder: (context, index) {
           final booking = _bookings[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 3,
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              title: Text(
-                booking['airline'] ?? 'Unknown Airline',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 6),
-                  Text('From: ${booking['fromCode'] ?? '-'}'),
-                  Text('To: ${booking['toCode'] ?? '-'}'),
-                  Text('Departure: ${booking['departTime'] ?? '-'}'),
-                  Text('Arrival: ${booking['arriveTime'] ?? '-'}'),
-                  Text('Seat: ${booking['seat'] ?? '-'}'),
-                  Text('Booked At: ${_formatDate(booking['bookedAt'])}'),
-                  Text('Price: \$${booking['price']?.toStringAsFixed(2) ?? '-'}'),
-                ],
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                onPressed: () => _deleteBooking(index),
-                tooltip: 'Delete booking',
-              ),
-            ),
-          );
+          return _buildTicketCard(booking);
         },
       ),
+    );
+  }
+
+  Widget _buildTicketCard(Map<String, dynamic> booking) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5)),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Airline Logo (Placeholder)
+          Center(
+            child: Image.asset(
+              'assets/images/indigo.png', // Replace with dynamic image if available
+              height: 40,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Route Info
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildTimeColumn(booking['departTime'] ?? '-', booking['fromCode'] ?? '-', booking['fromAirport'] ?? ''),
+              const Icon(Icons.flight_takeoff_rounded, color: Colors.redAccent),
+              _buildTimeColumn(booking['arriveTime'] ?? '-', booking['toCode'] ?? '-', booking['toAirport'] ?? ''),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Date & Time Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _infoBox(Icons.calendar_today_outlined, _formatDate(booking['bookedAt'])),
+              _infoBox(Icons.access_time_filled_rounded, booking['departTime'] ?? '-'),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Flight details
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _flightDetail('Flight', booking['flightNo'] ?? 'IN 230'),
+              _flightDetail('Gate', booking['gate'] ?? '22'),
+              _flightDetail('Seat', booking['seat'] ?? '-'),
+              _flightDetail('Class', booking['class'] ?? 'Economy'),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Modify Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Modify', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeColumn(String time, String code, String airport) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(time, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(code, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey)),
+        SizedBox(
+          width: 90,
+          child: Text(
+            airport,
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            maxLines: 2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _infoBox(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F1F1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.black87),
+          const SizedBox(width: 8),
+          Text(text, style: const TextStyle(fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
+  Widget _flightDetail(String label, String value) {
+    return Column(
+      children: [
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+      ],
     );
   }
 
@@ -120,8 +179,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     if (isoString == null) return '-';
     try {
       final dt = DateTime.parse(isoString);
-      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (e) {
+      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+    } catch (_) {
       return isoString;
     }
   }

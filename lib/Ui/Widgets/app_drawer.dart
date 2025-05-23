@@ -4,12 +4,11 @@ import 'package:provider/provider.dart';
 import '../../data/providers/services/local_storage_service.dart';
 import '../../data/providers/auth_provider.dart';
 import '../../app_colors.dart';
+import '../Screens/Login/Bookings/my_bookings_screen.dart';
 import '../Screens/Login/Profile/profile_screen.dart';
 import '../screens/login/login_with_phone_screen.dart';
 
 /// Sliding navigation drawer shown across the app.
-///
-/// Pass [selected] with the matching menu id to highlight the active screen.
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key, this.selected});
 
@@ -70,8 +69,7 @@ class _Header extends StatelessWidget {
           const Icon(Icons.close, size: 22),
           const SizedBox(width: 24),
           InkWell(
-            onTap: ()
-            {
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ProfileScreen()),
@@ -81,7 +79,9 @@ class _Header extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 22,
-                  backgroundImage: const AssetImage('assets/images/avatar_placeholder.png'),
+                  backgroundImage: const AssetImage(
+                    'assets/images/avatar_placeholder.png',
+                  ),
                   backgroundColor: Colors.grey.shade200,
                 ),
                 const SizedBox(width: 12),
@@ -100,8 +100,7 @@ class _Header extends StatelessWidget {
                 ),
               ],
             ),
-          )
-
+          ),
         ],
       ),
     );
@@ -125,9 +124,11 @@ class _MenuList extends StatelessWidget {
     }) {
       final bool active = selected == id;
       return ListTile(
-        leading: Icon(icon,
-            size: 20,
-            color: active ? AppColors.orange : Colors.grey.shade800),
+        leading: Icon(
+          icon,
+          size: 20,
+          color: active ? AppColors.orange : Colors.grey.shade800,
+        ),
         title: Text(
           label,
           style: TextStyle(
@@ -136,8 +137,8 @@ class _MenuList extends StatelessWidget {
           ),
         ),
         onTap: () {
-          Navigator.pop(context);
-          onTap?.call();
+          Navigator.pop(context); // Close drawer
+          onTap?.call(); // Execute navigation callback if any
         },
       );
     }
@@ -145,16 +146,82 @@ class _MenuList extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        item(id: 'myBookings', icon: Icons.assignment_outlined, label: 'My Bookings'),
-        item(id: 'boardingPass', icon: Icons.confirmation_number_outlined, label: 'Boarding Pass'),
-        item(id: 'support', icon: Icons.headset_mic_outlined, label: 'Support'),
-        item(id: 'rate', icon: Icons.star_border, label: 'Rate us'),
+        item(
+          id: 'myBookings',
+          icon: Icons.assignment_outlined,
+          label: 'My Bookings',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MyBookingsScreen()),
+            );
+          },
+        ),
+        item(
+          id: 'boardingPass',
+          icon: Icons.confirmation_number_outlined,
+          label: 'Boarding Pass',
+          onTap: () {
+            // Add boarding pass screen navigation if needed
+          },
+        ),
+        item(
+          id: 'support',
+          icon: Icons.headset_mic_outlined,
+          label: 'Support',
+          onTap: () {
+            // Add support screen navigation if needed
+          },
+        ),
+        item(
+          id: 'rate',
+          icon: Icons.star_border,
+          label: 'Rate us',
+          onTap: () {
+            // Add rate us navigation if needed
+          },
+        ),
         const _Divider(),
-        item(id: 'flight', icon: Icons.flight_takeoff_rounded, label: 'Flight'),
-        item(id: 'hotel', icon: Icons.hotel_outlined, label: 'Hotel'),
-        item(id: 'bus', icon: Icons.directions_bus_outlined, label: 'Bus'),
-        item(id: 'tour', icon: Icons.lock_outline, label: 'Tour'),
-        item(id: 'loan', icon: Icons.account_balance_wallet_outlined, label: 'Travel loan'),
+        item(
+          id: 'flight',
+          icon: Icons.flight_takeoff_rounded,
+          label: 'Flight',
+          onTap: () {
+            // Add flight screen navigation if needed
+          },
+        ),
+        item(
+          id: 'hotel',
+          icon: Icons.hotel_outlined,
+          label: 'Hotel',
+          onTap: () {
+            // Add hotel screen navigation if needed
+          },
+        ),
+        item(
+          id: 'bus',
+          icon: Icons.directions_bus_outlined,
+          label: 'Bus',
+          onTap: () {
+            // Add bus screen navigation if needed
+          },
+        ),
+        item(
+          id: 'tour',
+          icon: Icons.lock_outline,
+          label: 'Tour',
+          onTap: () {
+            // Add tour screen navigation if needed
+          },
+        ),
+        item(
+          id: 'loan',
+          icon: Icons.account_balance_wallet_outlined,
+          label: 'Travel loan',
+          onTap: () {
+            // Add travel loan screen navigation if needed
+          },
+        ),
       ],
     );
   }

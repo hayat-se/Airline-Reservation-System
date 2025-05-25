@@ -1,11 +1,9 @@
-// lib/Ui/Screens/Login/Bookings/flight_search_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../Data/Providers/Models/ticket.dart';
 import '../../../Widgets/location_picker_field.dart';
 import 'search_result_screen.dart';
-
 import '../../../Widgets/app_drawer.dart';
 
 class FlightSearchScreen extends StatefulWidget {
@@ -23,7 +21,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   int _passengers = 1;
   String _travelClass = 'Economy';
 
-  final _df = DateFormat('dd MMM yyyy');
+  final _df = DateFormat('dd/MM/yyyy');
 
   @override
   void dispose() {
@@ -110,9 +108,12 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: const Text('Book Flight'),
         elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
       endDrawer: const AppDrawer(selected: 'flight'),
       body: SingleChildScrollView(
@@ -120,77 +121,189 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LocationPickerField(
-              label: 'From',
-              controller: _fromCtrl,
-              onSelected: (_, __) => setState(() {}),
-            ),
-            const SizedBox(height: 16),
-            LocationPickerField(
-              label: 'To',
-              controller: _toCtrl,
-              onSelected: (_, __) => setState(() {}),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _DateBox(
-                    label: 'Departure',
-                    date: _departDate,
-                    onTap: _pickDepartDate,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ChoiceChip(
+                        label: const Text("One way"),
+                        selected: true,
+                        selectedColor: Colors.orange,
+                        labelStyle: const TextStyle(color: Colors.white),
+                        onSelected: (_) {},
+                      ),
+                      ChoiceChip(
+                        label: const Text("Round"),
+                        selected: false,
+                        onSelected: (_) {},
+                      ),
+                      ChoiceChip(
+                        label: const Text("Multicity"),
+                        selected: false,
+                        onSelected: (_) {},
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _DateBox(
-                    label: 'Return',
-                    date: _returnDate,
-                    onTap: _pickReturnDate,
-                    placeholder: 'Add Return Date',
+                  const SizedBox(height: 20),
+                  LocationPickerField(
+                    label: 'From',
+                    controller: _fromCtrl,
+                    onSelected: (_, __) => setState(() {}),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _DropdownBox<int>(
-                    label: 'Passengers',
-                    value: _passengers,
-                    items: List.generate(3, (i) => i + 1),
-                    stringify: (v) => v.toString(),
-                    onChanged: (v) => setState(() => _passengers = v!),
+                  const SizedBox(height: 16),
+                  LocationPickerField(
+                    label: 'To',
+                    controller: _toCtrl,
+                    onSelected: (_, __) => setState(() {}),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _DropdownBox<String>(
-                    label: 'Class',
-                    value: _travelClass,
-                    items: const ['Economy', 'Business', 'First'],
-                    stringify: (v) => v,
-                    onChanged: (v) => setState(() => _travelClass = v!),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _DateBox(
+                          label: 'Departure',
+                          date: _departDate,
+                          onTap: _pickDepartDate,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _DateBox(
+                          label: 'Return',
+                          date: _returnDate,
+                          onTap: _pickReturnDate,
+                          placeholder: 'Add Return Date',
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: _search,
-                child: const Text('Search',
-                    style: TextStyle(fontSize: 18, color: Colors.white)),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _DropdownBox<int>(
+                          label: 'Traveller',
+                          value: _passengers,
+                          items: List.generate(3, (i) => i + 1),
+                          stringify: (v) => '$v Adult',
+                          onChanged: (v) => setState(() => _passengers = v!),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _DropdownBox<String>(
+                          label: 'Class',
+                          value: _travelClass,
+                          items: const ['Economy', 'Business', 'First'],
+                          stringify: (v) => v,
+                          onChanged: (v) => setState(() => _travelClass = v!),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _search,
+                      child: const Text('Search',
+                          style:
+                          TextStyle(fontSize: 16, color: Colors.white)),
+                    ),
+                  ),
+                ],
               ),
             ),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              "Hot offer",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                          offset: Offset(0, 3),
+                        )
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text("15%OFF",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.orange)),
+                        SizedBox(height: 8),
+                        Text("15% discount\nwith mastercard"),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                          offset: Offset(0, 3),
+                        )
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text("23%OFF",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.orange)),
+                        SizedBox(height: 8),
+                        Text("Visa card special\noffer for flights"),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),
@@ -213,7 +326,7 @@ class _DateBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final df = DateFormat('dd MMM');
+    final df = DateFormat('dd/MM/yyyy');
     return GestureDetector(
       onTap: onTap,
       child: _boxed(

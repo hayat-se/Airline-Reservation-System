@@ -1,6 +1,5 @@
-import 'package:airline_reservation_system/Data/Providers/services/local_storage_service.dart';
+import 'package:airline_reservation_system/data/providers/services/local_storage_service.dart';
 import 'package:flutter/material.dart';
-
 import '../../Ui/Screens/Login/login_with_phone_screen.dart';
 import '../../main.dart';
 

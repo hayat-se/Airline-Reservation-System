@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../Data/Providers/Models/ticket.dart';
@@ -60,7 +61,7 @@ class SearchResultScreen extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => FlightDetailScreen(ticket: tickets[i]),
+                    builder: (context) => FlightDetailScreen(ticket: tickets[i]),
                   ),
                 ),
               ),
@@ -110,29 +111,20 @@ class _SearchHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(from,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w700)),
+              Text(from, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
               const Spacer(),
-              const Icon(Icons.flight_takeoff_rounded,
-                  color: Colors.orange, size: 22),
+              const Icon(Icons.flight_takeoff_rounded, color: Colors.orange, size: 22),
               const Spacer(),
-              Text(to,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w700)),
+              Text(to, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
             ],
           ),
           const SizedBox(height: 10),
           Text(
-            '${df.format(departDate)}'
-                '${returnDate != null ? '  •  ${df.format(returnDate!)}' : ''}',
+            '${df.format(departDate)}${returnDate != null ? '  •  ${df.format(returnDate!)}' : ''}',
             style: const TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 4),
-          Text(
-            '$passengers Pax  •  $travelClass',
-            style: const TextStyle(color: Colors.grey),
-          ),
+          Text('$passengers Pax  •  $travelClass', style: const TextStyle(color: Colors.grey)),
         ],
       ),
     );
@@ -140,10 +132,7 @@ class _SearchHeader extends StatelessWidget {
 }
 
 class _TicketCard extends StatelessWidget {
-  const _TicketCard({
-    required this.ticket,
-    required this.onTap,
-  });
+  const _TicketCard({required this.ticket, required this.onTap});
 
   final Ticket ticket;
   final VoidCallback onTap;
@@ -152,17 +141,27 @@ class _TicketCard extends StatelessWidget {
     switch (airline.toLowerCase()) {
       case 'pia':
       case 'pakistan international airlines':
-        return 'assets/images/Airblue-logo.png';
+        return 'assets/images/PIA-logo.png';
       case 'airblue':
-        return 'assets/logos/airblue.png';
-      case 'sereneair':
-        return 'assets/logos/sereneair.png';
+        return 'assets/images/Airblue-logo.png';
       case 'airsial':
-        return 'assets/logos/airsial.png';
+        return 'assets/images/Airsial-logo.png';
       case 'fly jinnah':
-        return 'assets/logos/flyjinnah.png';
+      case 'flyjinnah':
+        return 'assets/images/FlyJinnah-logo.png';
+      case 'sereneair':
+        return 'assets/images/SereneAir-logo.png';
+      case 'qatar':
+      case 'qatar airways':
+      case 'qatar air':
+        return 'assets/images/app_logo.png';
+      case 'indigo':
+        return 'assets/images/app_logo.png';
+      case 'emirates':
+      case 'emirates airlines':
+        return 'assets/images/app_logo.png';
       default:
-        return 'assets/logos/default.png';
+        return 'assets/images/app_logo.png';
     }
   }
 
@@ -180,6 +179,7 @@ class _TicketCard extends StatelessWidget {
           child: Column(
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(6),
@@ -188,14 +188,17 @@ class _TicketCard extends StatelessWidget {
                       height: 24,
                       width: 60,
                       fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.flight, color: Colors.grey),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       '${ticket.airline} • ${ticket.flightNumber}',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                     ),
                   ),
                 ],
@@ -207,11 +210,8 @@ class _TicketCard extends StatelessWidget {
                   _timeBlock(ticket.departTime, ticket.fromCode),
                   Column(
                     children: [
-                      const Icon(Icons.linear_scale_rounded,
-                          color: Colors.grey, size: 20),
-                      Text(ticket.duration,
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.grey)),
+                      const Icon(Icons.linear_scale_rounded, color: Colors.grey, size: 20),
+                      Text(ticket.duration, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     ],
                   ),
                   _timeBlock(ticket.arriveTime, ticket.toCode),
@@ -223,17 +223,12 @@ class _TicketCard extends StatelessWidget {
                 children: [
                   Text(
                     'PKR ${ticket.price.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.orange,
-                    ),
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.orange),
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       minimumSize: const Size(100, 40),
                     ),
                     onPressed: onTap,
@@ -250,12 +245,9 @@ class _TicketCard extends StatelessWidget {
 
   Widget _timeBlock(String time, String code) => Column(
     children: [
-      Text(time,
-          style:
-          const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+      Text(time, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
       const SizedBox(height: 2),
-      Text(code,
-          style: const TextStyle(fontSize: 14, color: Colors.grey)),
+      Text(code, style: const TextStyle(fontSize: 14, color: Colors.grey)),
     ],
   );
 }

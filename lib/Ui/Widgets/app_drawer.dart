@@ -1,18 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:airline_reservation_system/ui/screens/login/profile/profile_screen.dart';
 import '../../data/providers/services/local_storage_service.dart';
 import '../../data/providers/auth_provider.dart';
 import '../../app_colors.dart';
-import '../Screens/Login/Bookings/my_bookings_screen.dart';
-import '../Screens/Login/Profile/profile_screen.dart';
+import '../screens/login/bookings/my_bookings_screen.dart';
 import '../screens/login/login_with_phone_screen.dart';
 
-/// Sliding navigation drawer shown across the app.
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key, this.selected});
-
-  /// Menu id for the currently‑active screen (e.g. 'flight').
   final String? selected;
 
   @override
@@ -22,10 +19,11 @@ class AppDrawer extends StatelessWidget {
       builder: (context, snapshot) {
         final name = snapshot.data?['name'] ?? 'Guest';
         final email = snapshot.data?['email'] ?? '';
+        final imagePath = snapshot.data?['imagePath'];
+        final imageExists = imagePath != null && File(imagePath).existsSync();
 
         return Drawer(
           backgroundColor: Colors.white,
-          elevation: 0,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
               topRight: Radius.circular(24),
@@ -34,9 +32,55 @@ class AppDrawer extends StatelessWidget {
           ),
           child: SafeArea(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _Header(name: name, email: email),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.close, size: 24),
+                      ),
+                      const SizedBox(width: 24),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.grey.shade200,
+                              backgroundImage: imageExists
+                                  ? FileImage(File(imagePath!))
+                                  : const AssetImage('assets/images/avatar_placeholder.png')
+                              as ImageProvider,
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Hello', style: TextStyle(fontSize: 12)),
+                                Text(
+                                  name,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const _Divider(),
                 Expanded(child: _MenuList(selected: selected)),
                 const _Divider(),
@@ -53,65 +97,9 @@ class AppDrawer extends StatelessWidget {
 }
 
 //───────────────────────────────────────────────────────────────────────────
-// Header – avatar, greeting and user name
-class _Header extends StatelessWidget {
-  const _Header({required this.name, required this.email});
 
-  final String name;
-  final String email;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-      child: Row(
-        children: [
-          const Icon(Icons.close, size: 22),
-          const SizedBox(width: 24),
-          InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              );
-            },
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundImage: const AssetImage(
-                    'assets/images/avatar_placeholder.png',
-                  ),
-                  backgroundColor: Colors.grey.shade200,
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Hello', style: TextStyle(fontSize: 12)),
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-//───────────────────────────────────────────────────────────────────────────
-// Menu list – primary and secondary sections
 class _MenuList extends StatelessWidget {
   const _MenuList({required this.selected});
-
   final String? selected;
 
   @override
@@ -123,28 +111,32 @@ class _MenuList extends StatelessWidget {
       VoidCallback? onTap,
     }) {
       final bool active = selected == id;
-      return ListTile(
-        leading: Icon(
-          icon,
-          size: 20,
-          color: active ? AppColors.orange : Colors.grey.shade800,
-        ),
-        title: Text(
-          label,
-          style: TextStyle(
-            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+      return Material(
+        color: active ? Colors.orange.withOpacity(0.08) : Colors.transparent,
+        child: ListTile(
+          leading: Icon(
+            icon,
+            size: 22,
             color: active ? AppColors.orange : Colors.black87,
           ),
+          title: Text(
+            label,
+            style: TextStyle(
+              fontWeight: active ? FontWeight.bold : FontWeight.w500,
+              color: active ? AppColors.orange : Colors.black87,
+            ),
+          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          onTap: () {
+            Navigator.pop(context);
+            onTap?.call();
+          },
         ),
-        onTap: () {
-          Navigator.pop(context); // Close drawer
-          onTap?.call(); // Execute navigation callback if any
-        },
       );
     }
 
     return ListView(
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       children: [
         item(
           id: 'myBookings',
@@ -153,81 +145,22 @@ class _MenuList extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const MyBookingsScreen()),
+              MaterialPageRoute(builder: (_) => const MyBookingsScreen()),
             );
           },
         ),
-        item(
-          id: 'boardingPass',
-          icon: Icons.confirmation_number_outlined,
-          label: 'Boarding Pass',
-          onTap: () {
-            // Add boarding pass screen navigation if needed
-          },
-        ),
-        item(
-          id: 'support',
-          icon: Icons.headset_mic_outlined,
-          label: 'Support',
-          onTap: () {
-            // Add support screen navigation if needed
-          },
-        ),
-        item(
-          id: 'rate',
-          icon: Icons.star_border,
-          label: 'Rate us',
-          onTap: () {
-            // Add rate us navigation if needed
-          },
-        ),
+        item(id: 'boardingPass', icon: Icons.confirmation_number_outlined, label: 'Boarding Pass'),
+        item(id: 'support', icon: Icons.headset_mic_outlined, label: 'Support'),
+        item(id: 'rate', icon: Icons.star_border, label: 'Rate us'),
         const _Divider(),
-        item(
-          id: 'flight',
-          icon: Icons.flight_takeoff_rounded,
-          label: 'Flight',
-          onTap: () {
-            // Add flight screen navigation if needed
-          },
-        ),
-        item(
-          id: 'hotel',
-          icon: Icons.hotel_outlined,
-          label: 'Hotel',
-          onTap: () {
-            // Add hotel screen navigation if needed
-          },
-        ),
-        item(
-          id: 'bus',
-          icon: Icons.directions_bus_outlined,
-          label: 'Bus',
-          onTap: () {
-            // Add bus screen navigation if needed
-          },
-        ),
-        item(
-          id: 'tour',
-          icon: Icons.lock_outline,
-          label: 'Tour',
-          onTap: () {
-            // Add tour screen navigation if needed
-          },
-        ),
-        item(
-          id: 'loan',
-          icon: Icons.account_balance_wallet_outlined,
-          label: 'Travel loan',
-          onTap: () {
-            // Add travel loan screen navigation if needed
-          },
-        ),
+        item(id: 'flight', icon: Icons.flight_takeoff_rounded, label: 'Flight'),
       ],
     );
   }
 }
 
 //───────────────────────────────────────────────────────────────────────────
+
 class _LogoutTile extends StatelessWidget {
   const _LogoutTile();
 
@@ -251,6 +184,7 @@ class _LogoutTile extends StatelessWidget {
 }
 
 //───────────────────────────────────────────────────────────────────────────
+
 class _AppVersion extends StatelessWidget {
   const _AppVersion();
 
@@ -267,6 +201,7 @@ class _AppVersion extends StatelessWidget {
 }
 
 //───────────────────────────────────────────────────────────────────────────
+
 class _Divider extends StatelessWidget {
   const _Divider();
 

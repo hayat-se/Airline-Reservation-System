@@ -6,8 +6,7 @@ import '../../../../Data/Providers/Models/ticket.dart';
 import '../../../Widgets/location_picker_field.dart';
 import 'search_result_screen.dart';
 
-// NEW: shared navigation drawer
-import '../../../Widgets/app_drawer.dart';   // adjust the path if your folder differs
+import '../../../Widgets/app_drawer.dart';
 
 class FlightSearchScreen extends StatefulWidget {
   const FlightSearchScreen({super.key});
@@ -33,9 +32,8 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
     super.dispose();
   }
 
-  /// sample tickets – replace with your API call
   List<Ticket> _generateTickets(String from, String to) {
-    final airlines = ['Indigo', 'Qatar', 'Emirates', 'Etihad', 'Air India'];
+    final airlines = ['PIA', 'Airblue', 'SereneAir', 'Airsial', 'Fly Jinnah'];
     final baseTimes = [
       {'depart': '05:00', 'arrive': '09:30'},
       {'depart': '08:45', 'arrive': '13:15'},
@@ -43,6 +41,9 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
       {'depart': '15:15', 'arrive': '19:45'},
       {'depart': '19:00', 'arrive': '23:30'},
     ];
+
+    final fromAirport = 'Allama Iqbal Intl';
+    final toAirport = 'Jinnah Intl';
 
     return List.generate(5, (i) {
       final airline = airlines[i];
@@ -53,17 +54,18 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
         flightNumber: '${airline.substring(0, 2).toUpperCase()}-${100 + i}',
         fromCode: from.toUpperCase().substring(0, 3),
         toCode: to.toUpperCase().substring(0, 3),
+        fromAirport: fromAirport,
+        toAirport: toAirport,
         departTime: time['depart']!,
         arriveTime: time['arrive']!,
-        duration: '4h 30m', // You can calculate based on time if needed
+        duration: '4h 30m',
+        flightClass: _travelClass,
+        gate: 'G${i + 1}',
         price: 180 + (i * 25),
       );
     });
   }
 
-
-
-  // ───────────────────────── date pickers
   Future<void> _pickDepartDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -105,20 +107,14 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Book Flight'),
         elevation: 0,
-        // the default menu icon will appear on the right because we use endDrawer
       ),
-
-      // NEW: use shared drawer; highlight “flight”
       endDrawer: const AppDrawer(selected: 'flight'),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
         child: Column(
@@ -202,7 +198,6 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   }
 }
 
-// ─────────────────────────────────── helper widgets — unchanged
 class _DateBox extends StatelessWidget {
   const _DateBox({
     required this.label,

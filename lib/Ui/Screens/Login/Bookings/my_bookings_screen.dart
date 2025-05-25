@@ -33,6 +33,15 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     });
   }
 
+  Future<void> _deleteBooking(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _bookings.removeAt(index);
+    });
+    final updatedJson = jsonEncode(_bookings);
+    await prefs.setString('my_bookings', updatedJson);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,13 +61,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         itemCount: _bookings.length,
         itemBuilder: (context, index) {
           final booking = _bookings[index];
-          return _buildTicketCard(booking);
+          return _buildTicketCard(booking, index);
         },
       ),
     );
   }
 
-  Widget _buildTicketCard(Map<String, dynamic> booking) {
+  Widget _buildTicketCard(Map<String, dynamic> booking, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
@@ -71,13 +80,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       ),
       child: Column(
         children: [
-          // Airline Logo (Placeholder)
-          Center(
-            child: Image.asset(
-              'assets/images/indigo.png', // Replace with dynamic image if available
-              height: 40,
-            ),
-          ),
           const SizedBox(height: 20),
 
           // Route Info
@@ -113,17 +115,17 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Modify Button
+          // Delete Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => _deleteBooking(index),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('Modify', style: TextStyle(fontSize: 16)),
+              child: const Text('Delete', style: TextStyle(fontSize: 16)),
             ),
           ),
         ],

@@ -4,10 +4,11 @@ import '../../../../Data/Providers/Models/ticket.dart';
 import '../Bookings/ticket_screen.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class PaymentScreen extends StatefulWidget {
   final String resSeat;
-  final Ticket ticket;  // Added ticket param
+  final Ticket ticket;
 
   const PaymentScreen({super.key, required this.resSeat, required this.ticket});
 
@@ -23,6 +24,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
   final _cvvController = TextEditingController();
   bool _saveCard = false;
 
+  final _expiryFormatter = MaskTextInputFormatter(mask: '##/##');
+
   Future<void> saveBookingLocally(Ticket ticket, String selectedSeat) async {
     final prefs = await SharedPreferences.getInstance();
     final String? bookingsJson = prefs.getString('my_bookings');
@@ -36,11 +39,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
       'airline': ticket.airline,
       'fromCode': ticket.fromCode,
       'toCode': ticket.toCode,
+      'fromAirport': ticket.fromAirport,
+      'toAirport': ticket.toAirport,
       'departTime': ticket.departTime,
       'arriveTime': ticket.arriveTime,
       'duration': ticket.duration,
-      'price': ticket.price,
+      'flightNo': ticket.flightNumber,
       'seat': selectedSeat,
+      'class': ticket.flightClass,
+      'gate': ticket.gate ?? '22',
+      'price': ticket.price,
+      'cardHolder': _cardNameController.text,
       'bookedAt': DateTime.now().toIso8601String(),
     });
 
@@ -77,7 +86,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             return 'Card number must be 16 digits';
           }
           if (label == 'Expiry Date' &&
-              !RegExp(r'^(0[1-9]|1[0-2])\/\d{2}$').hasMatch(value)) {
+              !RegExp(r'^(0[1-9]|1[0-2])/\d{2}$').hasMatch(value.trim())) {
             return 'Enter MM/YY format';
           }
           if (label == 'CVV' && value.length < 3) {
@@ -88,7 +97,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          counterText: '', // hides character count
+          counterText: '',
           filled: true,
           fillColor: Colors.grey.shade50,
           border: OutlineInputBorder(
@@ -156,9 +165,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             _expiryDateController,
                             hint: 'MM/YY',
                             keyboardType: TextInputType.datetime,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
-                            ],
+                            inputFormatters: [_expiryFormatter],
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -208,8 +215,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) =>
-                                TicketScreen(seat: widget.resSeat)),
+                            builder: (_) => TicketScreen(seat: widget.resSeat)),
                       );
                     }
                   },
